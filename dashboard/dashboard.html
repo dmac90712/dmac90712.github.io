@@ -49,11 +49,21 @@
 
   <!-- Script: Load and Display Assignment Data -->
   <script>
+  console.log("📦 Loading assignments.csv...");
+
   Papa.parse("assignments.csv", {
     download: true,
     header: true,
+    skipEmptyLines: true,
     complete: function(results) {
+      console.log("✅ CSV Loaded:", results);
+
       const data = results.data;
+      if (!Array.isArray(data) || data.length === 0) {
+        console.error("❌ No assignment data found.");
+        return;
+      }
+
       const container = document.getElementById('assignment-cards');
       const progressSection = document.getElementById('progress-bar-section');
       const today = new Date();
@@ -74,24 +84,25 @@
       `;
       progressSection.appendChild(progressWrapper);
 
-      // Toggle
+      // Toggle Button
       const toggleBtn = document.createElement('button');
       toggleBtn.className = 'btn btn-outline-light btn-sm mt-3';
       toggleBtn.innerText = 'Show Completed Assignments';
       progressSection.appendChild(toggleBtn);
 
       let showCompleted = false;
-
       toggleBtn.addEventListener('click', () => {
         showCompleted = !showCompleted;
         toggleBtn.innerText = showCompleted ? 'Hide Completed Assignments' : 'Show Completed Assignments';
         renderAssignments();
       });
 
+      // Render Cards
       function renderAssignments() {
         container.innerHTML = '';
-
         data.forEach(item => {
+          if (!item.title || !item.due || !item.status) return;
+
           const dueDate = new Date(item.due);
           const timeDiff = dueDate - today;
           const daysRemaining = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
@@ -118,7 +129,7 @@
                 break;
               default:
                 bgClass = 'bg-secondary text-white';
-                countdownText = `<span class="text-white">No status</span>`;
+                countdownText = `<span class="text-white">Unknown status</span>`;
             }
           }
 
@@ -132,14 +143,16 @@
             <p>Status: <strong>${item.status}</strong></p>
             <p>${countdownText}</p>
           `;
-
           container.appendChild(article);
         });
       }
 
       renderAssignments();
+    },
+    error: function(err) {
+      console.error("❌ PapaParse error:", err);
     }
   });
-    </script>
+</script>
   </body>
 </html>
