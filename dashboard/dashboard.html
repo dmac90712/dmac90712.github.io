@@ -49,10 +49,45 @@
   <!-- Script: Load and Display Assignment Data -->
   <script>
     fetch('assignments.json')
-      .then(response => response.json())
-      .then(data => {
-        const container = document.getElementById('assignment-cards');
-        const today = new Date();
+    .then(response => response.json())
+    .then(data => {
+      const container = document.getElementById('assignment-cards');
+      const main = document.querySelector('main');
+      const today = new Date();
+
+      let total = data.length;
+      let completed = data.filter(item => item.status === 'Completed').length;
+
+      // Progress Bar Element
+      const progressWrapper = document.createElement('section');
+      progressWrapper.className = 'mb-4';
+      progressWrapper.innerHTML = `
+        <h5 class="text-white">Progress</h5>
+        <div class="progress">
+          <div class="progress-bar bg-success" role="progressbar" style="width: ${(completed / total) * 100}%" 
+               aria-valuenow="${completed}" aria-valuemin="0" aria-valuemax="${total}">
+            ${completed} of ${total} complete
+          </div>
+        </div>
+      `;
+      main.insertBefore(progressWrapper, container);
+
+      // Toggle Button for Completed Assignments
+      const toggleBtn = document.createElement('button');
+      toggleBtn.className = 'btn btn-outline-light btn-sm mt-3';
+      toggleBtn.innerText = 'Show Completed Assignments';
+      let showCompleted = false;
+      main.insertBefore(toggleBtn, container);
+
+      toggleBtn.addEventListener('click', () => {
+        showCompleted = !showCompleted;
+        toggleBtn.innerText = showCompleted ? 'Hide Completed Assignments' : 'Show Completed Assignments';
+        renderAssignments();
+      });
+
+      // Render Cards
+      function renderAssignments() {
+        container.innerHTML = ''; // Clear cards first
 
         data.forEach(item => {
           const dueDate = new Date(item.due);
@@ -62,7 +97,7 @@
           let bgClass = '';
           let countdownText = '';
 
-          if (daysRemaining < 0) {
+          if (daysRemaining < 0 && item.status !== 'Completed') {
             bgClass = 'bg-danger text-white';
             countdownText = `<span class="fw-bold">⚠️ Overdue by ${Math.abs(daysRemaining)} day(s)</span>`;
           } else {
@@ -85,6 +120,9 @@
             }
           }
 
+          // Only show completed if toggle is enabled
+          if (item.status === 'Completed' && !showCompleted) return;
+
           const article = document.createElement('article');
           article.className = `mb-3 p-3 shadow rounded ${bgClass}`;
           article.innerHTML = `
@@ -96,8 +134,11 @@
 
           container.appendChild(article);
         });
-      })
-      .catch(error => console.error('Error loading assignments:', error));
+      }
+
+      renderAssignments();
+    })
+    .catch(error => console.error('Error loading assignments:', error));
   </script>
 
 </body>
