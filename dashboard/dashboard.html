@@ -1,4 +1,3 @@
-<!-- dashboard.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -12,70 +11,94 @@
       color: #f1f1f1;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-    .container {
-      margin-top: 50px;
-    }
-    h1 {
-      color: #00d8ff;
-    }
-    .card {
-      background-color: #2a2a2a;
+    .card, article {
       border: none;
     }
   </style>
 </head>
 <body>
-  <div class="container text-center">
+
+  <!-- Page Header -->
+  <header class="container text-center mt-5">
     <h1>📊 Assignment Tracker Dashboard</h1>
     <p class="lead">Visualize and manage your coursework efficiently.</p>
+  </header>
 
-    <!-- Example placeholder card -->
-    <div class="row mt-5 justify-content-center">
-      <div class="col-md-6">
-        <div class="card p-4 shadow">
-          <h4 class="card-title">Upcoming Assignments</h4>
-          <p class="card-text">Integration with your Canvas or CSV schedule will display here.</p>
-          <a href="https://github.com/dmac90712/dmac90712.github.io/tree/main/dashboard" class="btn btn-info" target="_blank">View Project Files</a>
-        </div>
-      </div>
-    </div>
-  </div>
-    <script>
-  fetch('assignments.json')
-    .then(response => response.json())
-    .then(data => {
-      const container = document.createElement('div');
-      container.className = 'mt-4';
+  <!-- Upcoming Assignments Section -->
+  <main class="container mt-4" role="main">
+    <section aria-label="Upcoming Assignments" class="mb-5">
+      <article class="p-4 bg-light text-dark shadow rounded border-start border-4 border-info text-center">
+        <header>
+          <h2 class="text-primary">📌 Upcoming Assignments</h2>
+          <p>Integration with your Canvas or CSV schedule will display here.</p>
+        </header>
+        <a href="https://github.com/dmac90712/dmac90712.github.io/tree/main/dashboard" 
+           class="btn btn-info mt-3" target="_blank">View Project Files</a>
+      </article>
+    </section>
 
-      data.forEach(item => {
-        let bgClass = '';
-        switch (item.status) {
-          case 'Completed':
-            bgClass = 'bg-success text-white';
-            break;
-          case 'In Progress':
-            bgClass = 'bg-light text-dark border-start border-4 border-warning';
-            break;
-          case 'Not Started':
-            bgClass = 'bg-light text-dark border-start border-4 border-danger';
-            break;
-          default:
-            bgClass = 'bg-secondary text-white';
-        }
+    <!-- Assignment Cards Will Appear Here -->
+    <section id="assignment-cards" aria-label="Assignment List" class="mt-4"></section>
+  </main>
 
-        const card = document.createElement('div');
-        card.className = `card mb-3 p-3 text-start shadow ${bgClass}`;
-        card.innerHTML = `
-          <h5>${item.title}</h5>
-          <p>📅 Due: ${item.due}</p>
-          <p>Status: <strong>${item.status}</strong></p>
-        `;
-        container.appendChild(card);
-      });
+  <!-- Page Footer -->
+  <footer class="text-center text-muted mt-5 mb-4">
+    <small>© 2025 Derek McCrary | Built with HTML, JavaScript, and GitHub Pages</small>
+  </footer>
 
-      document.querySelector('.container').appendChild(container);
-    })
-    .catch(error => console.error('Error loading assignments:', error));
-   </script>
-  </body>
+  <!-- Script: Load and Display Assignment Data -->
+  <script>
+    fetch('assignments.json')
+      .then(response => response.json())
+      .then(data => {
+        const container = document.getElementById('assignment-cards');
+        const today = new Date();
+
+        data.forEach(item => {
+          const dueDate = new Date(item.due);
+          const timeDiff = dueDate - today;
+          const daysRemaining = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+
+          let bgClass = '';
+          let countdownText = '';
+
+          if (daysRemaining < 0) {
+            bgClass = 'bg-danger text-white';
+            countdownText = `<span class="fw-bold">⚠️ Overdue by ${Math.abs(daysRemaining)} day(s)</span>`;
+          } else {
+            switch (item.status) {
+              case 'Completed':
+                bgClass = 'bg-success text-white';
+                countdownText = `<span class="text-white">✅ Completed</span>`;
+                break;
+              case 'In Progress':
+                bgClass = 'bg-light text-dark border-start border-4 border-warning';
+                countdownText = `<span class="text-dark">⏳ ${daysRemaining} day(s) remaining</span>`;
+                break;
+              case 'Not Started':
+                bgClass = 'bg-light text-dark border-start border-4 border-danger';
+                countdownText = `<span class="text-dark">🕒 ${daysRemaining} day(s) remaining</span>`;
+                break;
+              default:
+                bgClass = 'bg-secondary text-white';
+                countdownText = `<span class="text-white">No status</span>`;
+            }
+          }
+
+          const article = document.createElement('article');
+          article.className = `mb-3 p-3 shadow rounded ${bgClass}`;
+          article.innerHTML = `
+            <h5>${item.title}</h5>
+            <p>📅 Due: ${item.due}</p>
+            <p>Status: <strong>${item.status}</strong></p>
+            <p>${countdownText}</p>
+          `;
+
+          container.appendChild(article);
+        });
+      })
+      .catch(error => console.error('Error loading assignments:', error));
+  </script>
+
+</body>
 </html>
