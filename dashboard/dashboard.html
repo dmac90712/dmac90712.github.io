@@ -40,5 +40,25 @@
       </div>
     </div>
   </div>
-</body>
+    <script>
+  fetch('assignments.json')
+    .then(response => response.json())
+    .then(data => {
+      const container = document.createElement('div');
+      container.className = 'mt-4';
+      data.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card mb-3 p-3 text-start';
+        card.innerHTML = `
+          <h5>${item.title}</h5>
+          <p>📅 Due: ${item.due}</p>
+          <p>Status: <strong>${item.status}</strong></p>
+        `;
+        container.appendChild(card);
+      });
+      document.querySelector('.container').appendChild(container);
+    })
+    .catch(error => console.error('Error loading assignments:', error));
+    </script>
+  </body>
 </html>
