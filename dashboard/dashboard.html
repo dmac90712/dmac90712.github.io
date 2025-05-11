@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Assignment Tracker Dashboard</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
   <style>
     body {
       background-color: #1c1c1c;
@@ -48,36 +49,38 @@
 
   <!-- Script: Load and Display Assignment Data -->
   <script>
-    fetch('assignments.json')
-    .then(response => response.json())
-    .then(data => {
+  Papa.parse("assignments.csv", {
+    download: true,
+    header: true,
+    complete: function(results) {
+      const data = results.data;
       const container = document.getElementById('assignment-cards');
-      const main = document.querySelector('main');
+      const progressSection = document.getElementById('progress-bar-section');
       const today = new Date();
 
-      let total = data.length;
-      let completed = data.filter(item => item.status === 'Completed').length;
+      const total = data.length;
+      const completed = data.filter(item => item.status === 'Completed').length;
 
-      // Progress Bar Element
-      const progressWrapper = document.createElement('section');
-      progressWrapper.className = 'mb-4';
+      // Progress Bar
+      const progressWrapper = document.createElement('div');
       progressWrapper.innerHTML = `
         <h5 class="text-white">Progress</h5>
         <div class="progress">
-          <div class="progress-bar bg-success" role="progressbar" style="width: ${(completed / total) * 100}%" 
+          <div class="progress-bar bg-success" role="progressbar" style="width: ${(completed / total) * 100}%"
                aria-valuenow="${completed}" aria-valuemin="0" aria-valuemax="${total}">
             ${completed} of ${total} complete
           </div>
         </div>
       `;
-      main.insertBefore(progressWrapper, container);
+      progressSection.appendChild(progressWrapper);
 
-      // Toggle Button for Completed Assignments
+      // Toggle
       const toggleBtn = document.createElement('button');
       toggleBtn.className = 'btn btn-outline-light btn-sm mt-3';
       toggleBtn.innerText = 'Show Completed Assignments';
+      progressSection.appendChild(toggleBtn);
+
       let showCompleted = false;
-      main.insertBefore(toggleBtn, container);
 
       toggleBtn.addEventListener('click', () => {
         showCompleted = !showCompleted;
@@ -85,9 +88,8 @@
         renderAssignments();
       });
 
-      // Render Cards
       function renderAssignments() {
-        container.innerHTML = ''; // Clear cards first
+        container.innerHTML = '';
 
         data.forEach(item => {
           const dueDate = new Date(item.due);
@@ -120,7 +122,6 @@
             }
           }
 
-          // Only show completed if toggle is enabled
           if (item.status === 'Completed' && !showCompleted) return;
 
           const article = document.createElement('article');
@@ -137,9 +138,8 @@
       }
 
       renderAssignments();
-    })
-    .catch(error => console.error('Error loading assignments:', error));
-  </script>
-
-</body>
+    }
+  });
+    </script>
+  </body>
 </html>
