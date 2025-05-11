@@ -48,24 +48,23 @@
       container.className = 'mt-4';
 
       data.forEach(item => {
-        // Determine card background class based on status
         let bgClass = '';
         switch (item.status) {
           case 'Completed':
             bgClass = 'bg-success text-white';
             break;
           case 'In Progress':
-            bgClass = 'bg-warning text-dark';
+            bgClass = 'bg-light text-dark border-start border-4 border-warning';
             break;
           case 'Not Started':
-            bgClass = 'bg-danger text-white';
+            bgClass = 'bg-light text-dark border-start border-4 border-danger';
             break;
           default:
             bgClass = 'bg-secondary text-white';
         }
 
         const card = document.createElement('div');
-        card.className = `card mb-3 p-3 text-start ${bgClass}`;
+        card.className = `card mb-3 p-3 text-start shadow ${bgClass}`;
         card.innerHTML = `
           <h5>${item.title}</h5>
           <p>📅 Due: ${item.due}</p>
@@ -77,6 +76,6 @@
       document.querySelector('.container').appendChild(container);
     })
     .catch(error => console.error('Error loading assignments:', error));
-    </script>
+   </script>
   </body>
 </html>
